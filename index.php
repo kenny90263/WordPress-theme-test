@@ -25,11 +25,11 @@ if ($email) {
 */
 
 //
-$str ="<h1>TEST</h1>";
+/*$str ="<h1>TEST</h1>";
 $str = sanitize_text_field($str);
 
 echo $str;
-
+*/
 
 ?>
 

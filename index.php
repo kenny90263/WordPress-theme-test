@@ -4,6 +4,82 @@
 
 <?php
 
+global $jal_db_version;
+$jal_db_version = '1.0';
+
+
+
+
+$table_name = $wpdb->prefix . 'liveshoutbox';
+
+$charset_collate = $wpdb->get_charset_collate();
+
+$sql = "CREATE TABLE $table_name (
+		id mediumint(9) NOT NULL AUTO_INCREMENT,
+		time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+		name tinytext NOT NULL,
+		text text NOT NULL,
+		url varchar(55) DEFAULT '' NOT NULL,
+		PRIMARY KEY  (id)
+	) $charset_collate;";
+
+require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+dbDelta($sql);
+
+add_option('jal_db_version', $jal_db_version);
+
+
+
+
+
+$welcome_name = 'Mr. WordPress';
+$welcome_text = 'Congratulations, you just completed the installation!';
+
+$table_name = $wpdb->prefix . 'liveshoutbox';
+
+$wpdb->insert(
+    $table_name,
+    array(
+        'time' => current_time('mysql'),
+        'name' => $welcome_name,
+        'text' => $welcome_text,
+    )
+);
+
+
+
+
+
+
+
+
+
+
+
+echo "<pre>";
+print_r($wpdb);
+echo "</pre>";
+
+?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<?php
+
 // 如果標題是中文，此函數不適用於 HTML 屬性
 /*$str = "這是字串";
 $str = sanitize_title($str);

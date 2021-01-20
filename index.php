@@ -4,7 +4,7 @@
 
 <?php
 
-global $jal_db_version;
+/*global $jal_db_version;
 $jal_db_version = '1.0';
 
 
@@ -46,6 +46,7 @@ $wpdb->insert(
     )
 );
 
+*/
 
 
 
@@ -55,11 +56,10 @@ $wpdb->insert(
 
 
 
-
-echo "<pre>";
+/*echo "<pre>";
 print_r($wpdb);
 echo "</pre>";
-
+*/
 ?>
 
 

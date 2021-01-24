@@ -1,6 +1,123 @@
 <?php
 
 
+
+function populate_posts($form)
+{
+
+    foreach ($form['fields'] as $field) {
+
+        if ($field->type != 'select' || strpos($field->cssClass, 'populate-posts') === false) {
+            continue;
+        }
+
+        $sevenDate = array(
+            date('Y-m-d'),
+            date("Y-m-d", strtotime("1 day")),
+            date("Y-m-d", strtotime("2 day")),
+            date("Y-m-d", strtotime("3 day")),
+            date("Y-m-d", strtotime("4 day")),
+            date("Y-m-d", strtotime("5 day")),
+            date("Y-m-d", strtotime("6 day"))
+            //date("Y-m-d",strtotime("7 day")),
+            //date("Y-m-d",strtotime("8 day")),
+        );
+
+        $choices = array();
+        foreach ($sevenDate as $sevenDateDisplay) {
+            $choices[] = array('text' => $sevenDateDisplay, 'value' => $sevenDateDisplay);
+        }
+        // update 'Select a Post' to whatever you'd like the instructive option to be
+        $field->placeholder = '選擇日期';
+        $field->choices = $choices;
+    }
+    return $form;
+}
+add_filter('gform_pre_render_2', 'populate_posts');
+
+
+
+// 新增表單狀態處理
+function add_payment_details_meta_box($meta_boxes, $entry, $form)
+{
+    $meta_boxes['progress'] = array(
+        'title'         => '進度處理',
+        'callback'      => 'progress_call_back',
+        'context'       => 'side',
+        'callback_args' => array($entry, $form),
+    );
+
+
+    return $meta_boxes;
+}
+add_filter('gform_entry_detail_meta_boxes', 'add_payment_details_meta_box', 10, 3);
+
+
+function progress_call_back($entry)
+{
+    $entry_id = $entry['entry']['id'];
+    $status = gform_get_meta($entry_id, 'status');
+    print_r($status);
+
+?>
+
+
+    <select>
+        <option value="處理中" name="a" <?php echo $status == "處理中" ? "selected" : ""; ?>>處理中</option>
+        <option value="已完成" name="a" <?php echo $status == "已完成" ? "selected" : ""; ?>>已完成</option>
+        <option value="作廢" name="a" <?php echo $status == "作廢" ? "selected" : ""; ?>>作廢</option>
+    </select>
+    <input type="submit">
+
+
+
+
+<?php
+
+
+
+    global $wpdb;
+    //$results = $wpdb->get_results("SELECT payment_status FROM {$wpdb->prefix}gf_entry WHERE id = 1");
+
+
+    echo $wpdb->update('{$wpdb->prefix}gf_entry', array('test'), array('user_id' => 2, 'meta_key' => 'nickname'));
+
+    // echo "<pre>";
+    // print_r($results);
+    // echo "</pre>";
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function event_cpt()
 {
     // CPT 文字的命名陣列

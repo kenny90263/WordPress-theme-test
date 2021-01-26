@@ -1,7 +1,6 @@
 <?php get_header(); ?>
 
 
-
 <?php
 
 /*global $jal_db_version;
@@ -61,22 +60,6 @@ print_r($wpdb);
 echo "</pre>";
 */
 ?>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <?php
 

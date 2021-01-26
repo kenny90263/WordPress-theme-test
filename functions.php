@@ -92,19 +92,6 @@ function progress_call_back($entry)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 function event_cpt()
 {
     // CPT 文字的命名陣列
@@ -154,26 +141,147 @@ add_action('init', 'event_cpt');
 
 
 
-
-function register_events_submenu_page()
+function kenny_course_entry_meta_boxes()
 {
-    add_submenu_page(
-        'edit.php?post_type=events',
-        '已報名清單',
-        '已報名清單',
-        'manage_options',
-        'event-entries',
-        'event_entries_cb'
+    add_meta_box(
+        'kenny_course_entry_box',
+        '報名人員',
+        'kenny_course_entry_box_cb',
+        'events'
+    );
+
+    add_meta_box(
+        'kenny_course_max_people_box',
+        '最多報名人數',
+        'kenny_course_max_people_box_cb',
+        'events',
+        'side'
     );
 }
+add_action('add_meta_boxes', 'kenny_course_entry_meta_boxes');
 
-function event_entries_cb()
+// 顯示報名人
+function kenny_course_entry_box_cb($post)
 {
-    echo '<div class="wrap"><div id="icon-tools" class="icon32"></div>';
-    echo '<h2>My Custom Submenu Page</h2>';
-    echo '</div>';
+
+    $courseID = $post->ID;
+    global $wpdb;
+
+    $result = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}kenny_course WHERE page_id = {$courseID}");
+
+
+    // 現在報名人數
+    $regPeople = count($result);
+
+    // echo "<pre>";
+    // print_r($result);
+    // echo "</pre>";
+?>
+
+
+    <div class="course-info">
+        <p>現在報名人數：<?= $regPeople; ?></p>
+        <p class="reg-now">最多報名人數：<?= get_post_meta($post->ID, 'course_max_people', true); ?></p>
+    </div>
+    <table class="at-entry-table-list">
+
+        <thead>
+            <tr>
+                <th>報名日期</th>
+                <th>姓名</th>
+                <th>生日</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <?php
+
+            foreach ($result as $regdata) {
+                echo "<tr>";
+                echo "<td>" . substr($regdata->create_date, 0, 10) . "</td>";
+                echo "<td>" . $regdata->name . "</td>";
+                echo "<td>" . substr($regdata->birthday, 0, 10) . "</td>";
+                echo "</tr>";
+            }
+
+            ?>
+
+        </tbody>
+    </table>
+
+    <style>
+        .course-info p{
+            font-size: 1.2em;
+            line-height: 70%;
+        }
+
+        .at-entry-table-list {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .at-entry-table-list th {
+            background: #D3DCE3;
+        }
+
+        .at-entry-table-list td,
+        .at-entry-table-list th {
+            border: 1px solid #000000;
+            text-align: center;
+            padding: 15px;
+            font-size: 1.2em;
+            color: #000000;
+        }
+
+        .at-entry-table-list tr:nth-child(even) {
+            background: #D3DCE3;
+        }
+    </style>
+
+
+<?php }
+
+
+
+// 最多報名人數
+function kenny_course_max_people_box_cb($post)
+{
+    echo '<input type="text" name="course_max_people" style="width: 80px;" value="' . get_post_meta($post->ID, 'course_max_people', true) . '"> 人';
 }
-add_action('admin_menu', 'register_events_submenu_page');
+
+
+
+function kenny_course_save_meta_box($post_id)
+{
+    // Save logic goes here. Don't forget to include nonce checks!
+    update_post_meta($post_id, 'course_max_people',   $_POST['course_max_people']);
+}
+add_action('save_post', 'kenny_course_save_meta_box');
+
+
+
+
+
+
+// function register_events_submenu_page()
+// {
+//     add_submenu_page(
+//         'edit.php?post_type=events',
+//         '已報名清單',
+//         '已報名清單',
+//         'manage_options',
+//         'event-entries',
+//         'event_entries_cb'
+//     );
+// }
+
+// function event_entries_cb()
+// {
+//     echo '<div class="wrap"><div id="icon-tools" class="icon32"></div>';
+//     echo '<h2>My Custom Submenu Page</h2>';
+//     echo '</div>';
+// }
+// add_action('admin_menu', 'register_events_submenu_page');
 
 
 

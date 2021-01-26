@@ -38,7 +38,7 @@ add_filter('gform_pre_render_2', 'populate_posts');
 
 
 // 新增表單狀態處理
-function add_payment_details_meta_box($meta_boxes, $entry, $form)
+function add_handle_details_meta_box($meta_boxes, $entry, $form)
 {
     $meta_boxes['progress'] = array(
         'title'         => '進度處理',
@@ -46,45 +46,32 @@ function add_payment_details_meta_box($meta_boxes, $entry, $form)
         'context'       => 'side',
         'callback_args' => array($entry, $form),
     );
-
-
     return $meta_boxes;
 }
-add_filter('gform_entry_detail_meta_boxes', 'add_payment_details_meta_box', 10, 3);
+add_filter('gform_entry_detail_meta_boxes', 'add_handle_details_meta_box', 10, 3);
 
 
 function progress_call_back($entry)
 {
+    global $wpdb;
+    // entry id
     $entry_id = $entry['entry']['id'];
-    $status = gform_get_meta($entry_id, 'status');
-    print_r($status);
-
+    // send entry status to database
+    if (!empty($_POST['at-status']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
+        $wpdb->update($wpdb->prefix . 'gf_entry', array('payment_status' => $_POST['at-status']), array('id' => $entry_id));
+    }
+    $result = $wpdb->get_results("SELECT payment_status FROM {$wpdb->prefix}gf_entry WHERE id = {$entry_id}");
+    $status = $result[0]->payment_status;
 ?>
-
-
-    <select>
-        <option value="處理中" name="a" <?php echo $status == "處理中" ? "selected" : ""; ?>>處理中</option>
-        <option value="已完成" name="a" <?php echo $status == "已完成" ? "selected" : ""; ?>>已完成</option>
-        <option value="作廢" name="a" <?php echo $status == "作廢" ? "selected" : ""; ?>>作廢</option>
+    <select name="at-status">
+        <option value="1" <?= $status == 1 ? "selected" : ""; ?>>申請資料處中...</option>
+        <option value="2" <?= $status == 2 ? "selected" : ""; ?>>己預約成功，可按時探訪。</option>
+        <option value="3" <?= $status == 3 ? "selected" : ""; ?>>本時段己無法預約，謝謝。</option>
+        <option value="4" <?= $status == 4 ? "selected" : ""; ?>>預約己取消。</option>
+        <option value="5" <?= $status == 5 ? "selected" : ""; ?>>無效申請單。</option>
     </select>
     <input type="submit">
-
-
-
-
 <?php
-
-
-
-    global $wpdb;
-    //$results = $wpdb->get_results("SELECT payment_status FROM {$wpdb->prefix}gf_entry WHERE id = 1");
-
-
-    echo $wpdb->update('{$wpdb->prefix}gf_entry', array('test'), array('user_id' => 2, 'meta_key' => 'nickname'));
-
-    // echo "<pre>";
-    // print_r($results);
-    // echo "</pre>";
 }
 
 

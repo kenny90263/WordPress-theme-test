@@ -92,7 +92,7 @@ function progress_call_back($entry)
 
 
 
-function event_cpt()
+function course_cpt()
 {
     // CPT 文字的命名陣列
     $labels_args = array(
@@ -124,7 +124,7 @@ function event_cpt()
         //'capability_type'
         //'capabilities'
         //'map_meta_cap'
-        'supports'              => array('title', 'author'),    //支援功能
+        'supports'              => array('title', 'author', 'editor'),    //支援功能
         //'register_meta_box_cb'
         //'taxonomies'           =>
         'has_archive'          => true,
@@ -135,9 +135,9 @@ function event_cpt()
         //'_builtin'
         //'_edit_link'    => 'posttest.php?post=%d',         
     );
-    register_post_type('events', $register_args);
+    register_post_type('course', $register_args);
 }
-add_action('init', 'event_cpt');
+add_action('init', 'course_cpt');
 
 
 
@@ -147,14 +147,22 @@ function kenny_course_entry_meta_boxes()
         'kenny_course_entry_box',
         '報名人員',
         'kenny_course_entry_box_cb',
-        'events'
+        'course'
     );
 
     add_meta_box(
         'kenny_course_max_people_box',
         '最多報名人數',
         'kenny_course_max_people_box_cb',
-        'events',
+        'course',
+        'side'
+    );
+
+    add_meta_box(
+        'kenny_course_expect_openclass_box',
+        '預計開課日期',
+        'kenny_course_expect_openclass_cb',
+        'course',
         'side'
     );
 }
@@ -210,7 +218,7 @@ function kenny_course_entry_box_cb($post)
     </table>
 
     <style>
-        .course-info p{
+        .course-info p {
             font-size: 1.2em;
             line-height: 70%;
         }
@@ -249,12 +257,18 @@ function kenny_course_max_people_box_cb($post)
     echo '<input type="text" name="course_max_people" style="width: 80px;" value="' . get_post_meta($post->ID, 'course_max_people', true) . '"> 人';
 }
 
+// 預計開課日期
+function kenny_course_expect_openclass_cb($post){
+    echo '<input type="date" name="course_expect_open" value="' . get_post_meta($post->ID, 'course_expect_open', true) . '"> 人';
+}
 
 
 function kenny_course_save_meta_box($post_id)
 {
     // Save logic goes here. Don't forget to include nonce checks!
     update_post_meta($post_id, 'course_max_people',   $_POST['course_max_people']);
+
+    update_post_meta($post_id, 'course_expect_open',   $_POST['course_expect_open']);
 }
 add_action('save_post', 'kenny_course_save_meta_box');
 

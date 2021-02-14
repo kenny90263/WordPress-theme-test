@@ -1,42 +1,6 @@
 <?php
 
 
-
-function populate_posts($form)
-{
-
-    foreach ($form['fields'] as $field) {
-
-        if ($field->type != 'select' || strpos($field->cssClass, 'populate-posts') === false) {
-            continue;
-        }
-
-        $sevenDate = array(
-            date('Y-m-d'),
-            date("Y-m-d", strtotime("1 day")),
-            date("Y-m-d", strtotime("2 day")),
-            date("Y-m-d", strtotime("3 day")),
-            date("Y-m-d", strtotime("4 day")),
-            date("Y-m-d", strtotime("5 day")),
-            date("Y-m-d", strtotime("6 day"))
-            //date("Y-m-d",strtotime("7 day")),
-            //date("Y-m-d",strtotime("8 day")),
-        );
-
-        $choices = array();
-        foreach ($sevenDate as $sevenDateDisplay) {
-            $choices[] = array('text' => $sevenDateDisplay, 'value' => $sevenDateDisplay);
-        }
-        // update 'Select a Post' to whatever you'd like the instructive option to be
-        $field->placeholder = '選擇日期';
-        $field->choices = $choices;
-    }
-    return $form;
-}
-add_filter('gform_pre_render_2', 'populate_posts');
-
-
-
 // 新增表單狀態處理
 function add_handle_details_meta_box($meta_boxes, $entry, $form)
 {
@@ -195,9 +159,13 @@ function kenny_course_entry_box_cb($post)
 
         <thead>
             <tr>
-                <th>報名日期</th>
-                <th>姓名</th>
-                <th>生日</th>
+                <th style="width: 5%;">刪除</th>
+                <th style="width: 10%;">報名日期</th>
+                <th style="width: 15%;">姓名</th>
+                <th style="width: 10%;">生日</th>
+                <th>聯絡電話</th>
+                <th style="width: 30%;">地址</th>
+                <th>公司行號</th>
             </tr>
         </thead>
 
@@ -206,9 +174,13 @@ function kenny_course_entry_box_cb($post)
 
             foreach ($result as $regdata) {
                 echo "<tr>";
+                echo '<td><input type="checkbox" name="id[]" value="' . $regdata->id . '"></td>';
                 echo "<td>" . substr($regdata->create_date, 0, 10) . "</td>";
                 echo "<td>" . $regdata->name . "</td>";
                 echo "<td>" . substr($regdata->birthday, 0, 10) . "</td>";
+                echo "<td>" . $regdata->telphone . "</td>";
+                echo "<td>" . $regdata->address . "</td>";
+                echo "<td>" . $regdata->companyname . "</td>";
                 echo "</tr>";
             }
 
@@ -216,7 +188,7 @@ function kenny_course_entry_box_cb($post)
 
         </tbody>
     </table>
-
+    <?php wp_nonce_field('kenny_delete_reg_action', 'kenny_nonce_delete_reg'); ?>
     <style>
         .course-info p {
             font-size: 1.2em;
@@ -254,26 +226,57 @@ function kenny_course_entry_box_cb($post)
 // 最多報名人數
 function kenny_course_max_people_box_cb($post)
 {
-    echo '<input type="text" name="course_max_people" style="width: 80px;" value="' . get_post_meta($post->ID, 'course_max_people', true) . '"> 人';
+    echo '<input type="number" name="course_max_people" style="width: 80px;" value="' . get_post_meta($post->ID, 'course_max_people', true) . '"> 人';
+    wp_nonce_field('kenny_course_action', 'kenny_nonce_expect_open');
 }
 
 // 預計開課日期
-function kenny_course_expect_openclass_cb($post){
+function kenny_course_expect_openclass_cb($post)
+{
     echo '<input type="date" name="course_expect_open" value="' . get_post_meta($post->ID, 'course_expect_open', true) . '"> 人';
 }
 
 
 function kenny_course_save_meta_box($post_id)
 {
-    // Save logic goes here. Don't forget to include nonce checks!
-    update_post_meta($post_id, 'course_max_people',   $_POST['course_max_people']);
 
-    update_post_meta($post_id, 'course_expect_open',   $_POST['course_expect_open']);
+    if (!isset($_POST['kenny_nonce_expect_open'], $_POST['kenny_nonce_delete_reg'])) {
+        return;
+    }
+
+    if (!wp_verify_nonce($_POST['kenny_nonce_expect_open'], 'kenny_course_action') && !wp_verify_nonce($_POST['kenny_nonce_delete_reg'], 'kenny_delete_reg_action')) {
+        return;
+    }
+
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+
+    if (!isset($_POST['post_type']) && 'course' === $_POST['post_type']) {
+        return;
+    }
+
+
+
+
+
+    $max_people = sanitize_text_field($_POST['course_max_people']);
+    if (!preg_match("/^[1-9][0-9]*$/", $max_people)) {
+        if (!$max_people == "") {
+            return;
+        }
+    }
+
+    update_post_meta($post_id, 'course_max_people',   $max_people);
+    //update_post_meta($post_id, 'course_expect_open',   $_POST['course_expect_open']);
+
+    global $wpdb;
+    $delete_id = $_POST['id'];
+    foreach ($delete_id as $ids) {
+        $wpdb->delete($wpdb->prefix . 'kenny_course', array('id' => $ids));
+    }
 }
 add_action('save_post', 'kenny_course_save_meta_box');
-
-
-
 
 
 
@@ -315,3 +318,62 @@ function test(){
 
 }
 add_action('save_post','test');*/
+
+
+function test()
+{
+
+
+    if (is_page('test')) {
+
+
+        $form = GFAPI::get_form( 5 );
+
+
+
+        echo "<pre>";
+        print_r($form);
+        echo "</pre>";
+
+    
+
+
+
+    }
+}
+
+add_action('the_content', 'test');
+
+
+function populate_posts($form)
+{
+
+    foreach ($form['fields'] as $field) {
+
+        if ($field->type != 'select' || strpos($field->cssClass, 'pick_seven_date') === false) {
+            continue;
+        }
+
+        $sevenDate = array(
+            date('Y-m-d'),
+            date("Y-m-d", strtotime("1 day")),
+            date("Y-m-d", strtotime("2 day")),
+            date("Y-m-d", strtotime("3 day")),
+            date("Y-m-d", strtotime("4 day")),
+            date("Y-m-d", strtotime("5 day")),
+            date("Y-m-d", strtotime("6 day"))
+            //date("Y-m-d",strtotime("7 day")),
+            //date("Y-m-d",strtotime("8 day")),
+        );
+
+        $choices = array();
+        foreach ($sevenDate as $sevenDateDisplay) {
+            $choices[] = array('text' => $sevenDateDisplay, 'value' => $sevenDateDisplay);
+        }
+        // update 'Select a Post' to whatever you'd like the instructive option to be
+        $field->placeholder = '選擇日期';
+        $field->choices = $choices;
+    }
+    return $form;
+}
+add_filter('gform_pre_render_5', 'populate_posts');

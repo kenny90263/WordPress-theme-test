@@ -320,61 +320,25 @@ function test(){
 add_action('save_post','test');*/
 
 
-function test($content)
-{
-
-
-    if (is_page('test')) {
-
-        // 探視日期欄位名稱
-        $field_date = GFAPI::get_field(5, 39)->label;
-        // 身分證字號
-        $field_id = GFAPI::get_field(5, 58)->label;
+// function test($content)
+// {
 
 
 
-        /**
-         * 
-         *    探視日期    field id 是   39
-         *    病人姓名    field id 是   6
-         *    訪客姓名    field id 是   5
-         *    生日       field id 是   26   
-         *    身分證字號  field id 是  58
-         *    預約病房    field id 是  60
-         *    時段       field id 是     
-         *    病床號     field id 是  61~86
-         *    
-         * */
-        $entry = GFAPI::get_entries(5);
+//     $ch = curl_init();
+//     $timeout = 5;
+//     curl_setopt($ch, CURLOPT_URL, 'http://localhost/_B-website-localhost/wordpress-test/test/');
+//     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+//     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+//     $file_contents = curl_exec($ch);
+//     curl_close($ch);
+//     echo $file_contents;
 
 
-        foreach ($entry as $value) {
 
-            for ($i = 61; $i <= 86; $i++) {
-                if ($value[$i]) {
-                    $bed_number = $value[$i];
-                }
-            }
 
-            $person_info[] =  array(
-                urlencode('探視日期')       => urlencode($value[39]),
-                urlencode('病人姓名')       => urlencode($value[6]),
-                urlencode('訪客姓名 ')      => urlencode($value[5]),
-                urlencode('生日')          => urlencode($value[26]),
-                urlencode('身分證字號')     => urlencode($value[58]),
-                urlencode('預約病房 ')      => urlencode($value[60]),
-                urlencode('病床號 ')        => urlencode($bed_number),
-
-            );
-        }
-
-        // json
-        $person_info_json = urldecode(json_encode($person_info));
-        echo $person_info_json;
-
-    }
-}
-add_action('the_content', 'test');
+// }
+// add_action('the_content', 'test');
 
 
 
@@ -403,6 +367,7 @@ function populate_posts($form)
         foreach ($sevenDate as $sevenDateDisplay) {
             $choices[] = array('text' => $sevenDateDisplay, 'value' => $sevenDateDisplay);
         }
+
         // update 'Select a Post' to whatever you'd like the instructive option to be
         $field->placeholder = '選擇日期';
         $field->choices = $choices;
@@ -410,3 +375,157 @@ function populate_posts($form)
     return $form;
 }
 add_filter('gform_pre_render_5', 'populate_posts');
+add_filter('gform_pre_render_6', 'populate_posts');
+
+function at_bed_number($form)
+{
+    // 病床 data info
+    $sevenDate = array(
+        'N502-A',
+        'N502-B',
+        'N503-A',
+        'N503-B',
+        'N503-C',
+        'N505-A',
+        'N505-B',
+        'N505-C',
+        'N506-A',
+        'N506-B',
+        'N506-C',
+        'N507-A',
+        'N507-B',
+        'N507-C',
+        'N508-A',
+        'N508-B',
+        'N508-C',
+        'N509-A',
+        'N509-B',
+        'N509-C',
+        'N510-A',
+        'N510-B',
+        'N510-C',
+        'N511-A',
+        'N511-B',
+        'N511-C',
+        'N512-A',
+        'N512-B',
+        'N512-C',
+        'N513-A',
+        'N513-B',
+        'N513-C',
+        'N516-A',
+        'N516-B',
+        'N516-C',
+        'N517-A',
+        'N517-B',
+        'N517-C',
+        'N518-A',
+        'N518-B',
+        'N518-C',
+        'N519-A',
+        'N519-B',
+        'N519-C',
+        'N520-A',
+        'N520-B',
+        'N520-C',
+        'N521-A',
+        'N521-B',
+        'N521-C',
+        'N522-A',
+        'N522-B',
+        'N523-A',
+        'N523-B',
+        'N523-C',
+        'N524-A',
+        'N524-B',
+        'N524-C',
+        'N525-A',
+        'N525-B',
+        'N525-C',
+        'N5236-A',
+        'N526',
+        'N527'
+    );
+
+    /**
+     * 
+     *  探視日期 field id 39
+     *  時段 field id 52
+     *  病床 field id 44
+     * 
+     */
+    $entry = GFAPI::get_entries(6);
+
+    foreach ($entry as $value) {
+        $bed_use_info[] = array($value[39], $value[52], $value[44]);
+    }
+
+    $entry_count = count($bed_use_info);
+
+
+    foreach($bed_use_info as $test){
+        
+    }
+
+    $tes = array_diff($bed_use_info[2],$bed_use_info[1]);
+
+   
+    echo "<pre>";
+    var_dump($tes);
+    echo "</pre>";
+
+    echo "<pre>";
+    print_r($bed_use_info);
+    echo "</pre>";
+
+
+
+    foreach ($form['fields'] as $field) {
+
+        if ($field->type != 'select' || strpos($field->cssClass, 'bed_number') === false) {
+            continue;
+        }
+
+
+
+        $choices = array();
+        foreach ($sevenDate as $sevenDateDisplay) {
+            $choices[] = array('text' => $sevenDateDisplay, 'value' => $sevenDateDisplay);
+        }
+
+        // update 'Select a Post' to whatever you'd like the instructive option to be
+        $field->placeholder = '選擇病床';
+        $field->choices = $choices;
+    }
+    return $form;
+}
+add_filter('gform_pre_render_6', 'at_bed_number');
+
+// 因為 gravity form 沒辦法用 PHP 輸出 disabled 屬性，所以用 Jquery 腳本使用
+function add_readonly_script($form)
+{
+?>
+
+    <script type="text/javascript">
+        jQuery(document).ready(function() {
+            var optionValues = [];
+            jQuery('option').each(function() {
+
+                // option value 裡有 full 值的就添加 disabled 屬性
+                if (!jQuery(this).val().indexOf('full')) {
+                    jQuery(this).attr("disabled", true);
+                }
+
+            });
+
+            //console.log(optionValues);
+            // if (test == 'full') { }
+            //jQuery("option").attr("disabled", true);
+
+        });
+    </script>
+
+<?php
+    return $form;
+}
+add_filter('gform_pre_render_6', 'add_readonly_script');

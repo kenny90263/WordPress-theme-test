@@ -377,6 +377,7 @@ function populate_posts($form)
 add_filter('gform_pre_render_5', 'populate_posts');
 add_filter('gform_pre_render_6', 'populate_posts');
 
+// 護理之家 - 時段上午 --- add the bed name and check the max-register people
 function at_bed_number($form)
 {
     // 病床 data info
@@ -451,46 +452,131 @@ function at_bed_number($form)
      * 
      *  探視日期 field id 39
      *  時段 field id 52
-     *  病床 field id 44
-     * 
+     *  病床分為兩組 
+     *      時段一上午 1000-1130 的 field id 44
+     *      時段二晚間 1800-1930 的 field id 58
      */
+
+    /**
+     *  時段 value 值 
+     *  1.上午 1000-1130
+     *  2.晚間 1800-1930
+     * 
+     **/
+
     $entry = GFAPI::get_entries(6);
 
-    foreach ($entry as $value) {
-        $bed_use_info[] = array($value[39], $value[52], $value[44]);
+    if (!empty($entry)) {
+
+
+        foreach ($entry as $value) {
+            $bed_use_info[] = array($value[39], $value[52], $value[44]);
+        }
+
+
+        $temp_count = 0;
+        // 篩選掉時段為晚間的申請
+        foreach ($bed_use_info as $temp_bed_use_info) {
+
+
+            if ($temp_bed_use_info[1] == "晚間 1800-1930") {
+                unset($bed_use_info[$temp_count]);
+            }
+
+
+
+            $temp_count++;
+        }
+
+        // 如有 unset 陣列的話 會將陣列補上空缺
+        $bed_use_info = array_values($bed_use_info);
+
+        $entry_count = count($bed_use_info);
+        $foreach_count = 0;
+
+        // start to check the register people
+        foreach ($bed_use_info as $temp_bed_use_info) {
+
+            if (!empty($repeat_remove))
+                if (in_array($foreach_count, $repeat_remove)) {
+                    $foreach_count++;
+                    continue;
+                }
+
+
+            for ($i = 0; $i < $entry_count; $i++) {
+
+                if (!empty($repeat_remove))
+                    if (in_array($i, $repeat_remove))
+                        continue;
+
+
+                if (!array_diff($bed_use_info[$foreach_count], $bed_use_info[$i])) {
+                    $full_bed[] = $bed_use_info[$foreach_count];
+                    $repeat_remove[] = $i;
+
+
+                    $group[] = $i;
+                }
+            }
+
+            $room_count[] = array(count($group), $group);
+
+            // initial group array
+            unset($group);
+
+            $foreach_count++;
+        }
+
+
+        // check the register people wheather arrive to 2 people
+        foreach ($room_count as $room_count_info) {
+            if ($room_count_info[0] >= 2) {
+                $room_name_info[] = $room_count_info[1][0];
+            }
+        }
+
+
+        // get final full bed name in an array
+        foreach ($room_name_info as $temp_room_name_info) {
+            $room_name_info_final[] = $bed_use_info[$temp_room_name_info][2];
+        }
+    } else {
+        $room_name_info_final = array();
     }
 
-    $entry_count = count($bed_use_info);
+    // echo "<pre>";
+    // print_r($room_name_info_final);
+    // echo "</pre>";
 
 
-    foreach($bed_use_info as $test){
-        
-    }
-
-    $tes = array_diff($bed_use_info[2],$bed_use_info[1]);
-
-   
-    echo "<pre>";
-    var_dump($tes);
-    echo "</pre>";
-
-    echo "<pre>";
-    print_r($bed_use_info);
-    echo "</pre>";
-
-
-
+    // start to retrieve the option of form 
     foreach ($form['fields'] as $field) {
 
         if ($field->type != 'select' || strpos($field->cssClass, 'bed_number') === false) {
             continue;
         }
 
-
-
         $choices = array();
         foreach ($sevenDate as $sevenDateDisplay) {
-            $choices[] = array('text' => $sevenDateDisplay, 'value' => $sevenDateDisplay);
+
+            if (empty($room_name_info_final)) {
+                $choices[] = array('text' => $sevenDateDisplay, 'value' => $sevenDateDisplay);
+            } else {
+                // if the bed room is full of people then value will add the 'full-' text in the front
+                foreach ($room_name_info_final as $temp_room_name_info_final) {
+
+                    if ($temp_room_name_info_final == $sevenDateDisplay) {
+                        $choices[] = array('text' => $sevenDateDisplay . '(人數已達最高預約人數)', 'value' => 'full-' . $sevenDateDisplay);
+                    } else {
+                        $choices[] = array('text' => $sevenDateDisplay, 'value' => $sevenDateDisplay);
+                    }
+                }
+            }
+
+
+
+            //
         }
 
         // update 'Select a Post' to whatever you'd like the instructive option to be
@@ -508,7 +594,7 @@ function add_readonly_script($form)
 
     <script type="text/javascript">
         jQuery(document).ready(function() {
-            var optionValues = [];
+
             jQuery('option').each(function() {
 
                 // option value 裡有 full 值的就添加 disabled 屬性
@@ -518,9 +604,6 @@ function add_readonly_script($form)
 
             });
 
-            //console.log(optionValues);
-            // if (test == 'full') { }
-            //jQuery("option").attr("disabled", true);
 
         });
     </script>

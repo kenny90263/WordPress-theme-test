@@ -3,15 +3,6 @@
 ?>
 <?php
 
-
-
-// 探視日期欄位名稱
-$field_date = GFAPI::get_field(5, 39)->label;
-// 身分證字號
-$field_id = GFAPI::get_field(5, 58)->label;
-
-
-
 /**
  * 
  *    探視日期    field id 是   39
@@ -25,6 +16,7 @@ $field_id = GFAPI::get_field(5, 58)->label;
  *    
  * */
 
+// 從表單中抓取欄位的資料
 $entry = GFAPI::get_entries(5);
 
 
@@ -47,13 +39,13 @@ foreach ($entry as $value) {
     );
 }
 
-// json
+// 轉成json
 $person_info_json = urldecode(json_encode($person_info));
 
-echo $person_info_json;
+// echo $person_info_json;
 
-
-//echo $bytes = file_put_contents("myfile.json", $person_info_json); 
+// 輸出json檔案
+echo $bytes = file_put_contents("myfile.json", $person_info_json); 
 
 
 ?>

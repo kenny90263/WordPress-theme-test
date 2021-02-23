@@ -377,238 +377,256 @@ function populate_posts($form)
 add_filter('gform_pre_render_5', 'populate_posts');
 add_filter('gform_pre_render_6', 'populate_posts');
 
-// 護理之家 - 時段上午 --- add the bed name and check the max-register people
-function at_bed_number($form)
-{
-    // 病床 data info
-    $sevenDate = array(
-        'N502-A',
-        'N502-B',
-        'N503-A',
-        'N503-B',
-        'N503-C',
-        'N505-A',
-        'N505-B',
-        'N505-C',
-        'N506-A',
-        'N506-B',
-        'N506-C',
-        'N507-A',
-        'N507-B',
-        'N507-C',
-        'N508-A',
-        'N508-B',
-        'N508-C',
-        'N509-A',
-        'N509-B',
-        'N509-C',
-        'N510-A',
-        'N510-B',
-        'N510-C',
-        'N511-A',
-        'N511-B',
-        'N511-C',
-        'N512-A',
-        'N512-B',
-        'N512-C',
-        'N513-A',
-        'N513-B',
-        'N513-C',
-        'N516-A',
-        'N516-B',
-        'N516-C',
-        'N517-A',
-        'N517-B',
-        'N517-C',
-        'N518-A',
-        'N518-B',
-        'N518-C',
-        'N519-A',
-        'N519-B',
-        'N519-C',
-        'N520-A',
-        'N520-B',
-        'N520-C',
-        'N521-A',
-        'N521-B',
-        'N521-C',
-        'N522-A',
-        'N522-B',
-        'N523-A',
-        'N523-B',
-        'N523-C',
-        'N524-A',
-        'N524-B',
-        'N524-C',
-        'N525-A',
-        'N525-B',
-        'N525-C',
-        'N5236-A',
-        'N526',
-        'N527'
-    );
-
-    /**
-     * 
-     *  探視日期 field id 39
-     *  時段 field id 52
-     *  病床分為兩組 
-     *      時段一上午 1000-1130 的 field id 44
-     *      時段二晚間 1800-1930 的 field id 58
-     */
-
-    /**
-     *  時段 value 值 
-     *  1.上午 1000-1130
-     *  2.晚間 1800-1930
-     * 
-     **/
-
-    $entry = GFAPI::get_entries(6);
-
-    if (!empty($entry)) {
 
 
-        foreach ($entry as $value) {
-            $bed_use_info[] = array($value[39], $value[52], $value[44]);
-        }
+// // 護理之家 - 時段上午 --- add the bed name and check the max-register people
+// function at_bed_number($form)
+// {
+//     // 病床 data info
+//     $sevenDate = array(
+//         'N502-A',
+//         'N502-B',
+//         'N503-A',
+//         'N503-B',
+//         'N503-C',
+//         'N505-A',
+//         'N505-B',
+//         'N505-C',
+//         'N506-A',
+//         'N506-B',
+//         'N506-C',
+//         'N507-A',
+//         'N507-B',
+//         'N507-C',
+//         'N508-A',
+//         'N508-B',
+//         'N508-C',
+//         'N509-A',
+//         'N509-B',
+//         'N509-C',
+//         'N510-A',
+//         'N510-B',
+//         'N510-C',
+//         'N511-A',
+//         'N511-B',
+//         'N511-C',
+//         'N512-A',
+//         'N512-B',
+//         'N512-C',
+//         'N513-A',
+//         'N513-B',
+//         'N513-C',
+//         'N516-A',
+//         'N516-B',
+//         'N516-C',
+//         'N517-A',
+//         'N517-B',
+//         'N517-C',
+//         'N518-A',
+//         'N518-B',
+//         'N518-C',
+//         'N519-A',
+//         'N519-B',
+//         'N519-C',
+//         'N520-A',
+//         'N520-B',
+//         'N520-C',
+//         'N521-A',
+//         'N521-B',
+//         'N521-C',
+//         'N522-A',
+//         'N522-B',
+//         'N523-A',
+//         'N523-B',
+//         'N523-C',
+//         'N524-A',
+//         'N524-B',
+//         'N524-C',
+//         'N525-A',
+//         'N525-B',
+//         'N525-C',
+//         'N5236-A',
+//         'N526',
+//         'N527'
+//     );
+
+//     /**
+//      * 
+//      *  探視日期 field id 39
+//      *  時段 field id 52
+//      *  病床分為兩組 
+//      *      時段一上午 1000-1130 的 field id 44
+//      *      時段二晚間 1800-1930 的 field id 58
+//      */
+
+//     /**
+//      *  時段 value 值 
+//      *  1.上午 1000-1130
+//      *  2.晚間 1800-1930
+//      * 
+//      **/
+
+//     $entry = GFAPI::get_entries(6);
+
+//     if (!empty($entry)) {
 
 
-        $temp_count = 0;
-        // 篩選掉時段為晚間的申請
-        foreach ($bed_use_info as $temp_bed_use_info) {
+//         foreach ($entry as $value) {
+//             $bed_use_info[] = array($value[39], $value[52], $value[44]);
+//         }
 
 
-            if ($temp_bed_use_info[1] == "晚間 1800-1930") {
-                unset($bed_use_info[$temp_count]);
-            }
+//         $temp_count = 0;
+//         // 篩選掉時段為晚間的申請
+//         foreach ($bed_use_info as $temp_bed_use_info) {
 
 
-
-            $temp_count++;
-        }
-
-        // 如有 unset 陣列的話 會將陣列補上空缺
-        $bed_use_info = array_values($bed_use_info);
-
-        $entry_count = count($bed_use_info);
-        $foreach_count = 0;
-
-        // start to check the register people
-        foreach ($bed_use_info as $temp_bed_use_info) {
-
-            if (!empty($repeat_remove))
-                if (in_array($foreach_count, $repeat_remove)) {
-                    $foreach_count++;
-                    continue;
-                }
-
-
-            for ($i = 0; $i < $entry_count; $i++) {
-
-                if (!empty($repeat_remove))
-                    if (in_array($i, $repeat_remove))
-                        continue;
-
-
-                if (!array_diff($bed_use_info[$foreach_count], $bed_use_info[$i])) {
-                    $full_bed[] = $bed_use_info[$foreach_count];
-                    $repeat_remove[] = $i;
-
-
-                    $group[] = $i;
-                }
-            }
-
-            $room_count[] = array(count($group), $group);
-
-            // initial group array
-            unset($group);
-
-            $foreach_count++;
-        }
-
-
-        // check the register people wheather arrive to 2 people
-        foreach ($room_count as $room_count_info) {
-            if ($room_count_info[0] >= 2) {
-                $room_name_info[] = $room_count_info[1][0];
-            }
-        }
-
-
-        // get final full bed name in an array
-        foreach ($room_name_info as $temp_room_name_info) {
-            $room_name_info_final[] = $bed_use_info[$temp_room_name_info][2];
-        }
-    } else {
-        $room_name_info_final = array();
-    }
-
-    // echo "<pre>";
-    // print_r($room_name_info_final);
-    // echo "</pre>";
-
-
-    // start to retrieve the option of form 
-    foreach ($form['fields'] as $field) {
-
-        if ($field->type != 'select' || strpos($field->cssClass, 'bed_number') === false) {
-            continue;
-        }
-
-        $choices = array();
-        foreach ($sevenDate as $sevenDateDisplay) {
-
-            if (empty($room_name_info_final)) {
-                $choices[] = array('text' => $sevenDateDisplay, 'value' => $sevenDateDisplay);
-            } else {
-                // if the bed room is full of people then value will add the 'full-' text in the front
-                foreach ($room_name_info_final as $temp_room_name_info_final) {
-
-                    if ($temp_room_name_info_final == $sevenDateDisplay) {
-                        $choices[] = array('text' => $sevenDateDisplay . '(人數已達最高預約人數)', 'value' => 'full-' . $sevenDateDisplay);
-                    } else {
-                        $choices[] = array('text' => $sevenDateDisplay, 'value' => $sevenDateDisplay);
-                    }
-                }
-            }
+//             if ($temp_bed_use_info[1] == "晚間 1800-1930") {
+//                 unset($bed_use_info[$temp_count]);
+//             }
 
 
 
-            //
-        }
+//             $temp_count++;
+//         }
 
-        // update 'Select a Post' to whatever you'd like the instructive option to be
-        $field->placeholder = '選擇病床';
-        $field->choices = $choices;
-    }
-    return $form;
-}
-add_filter('gform_pre_render_6', 'at_bed_number');
+//         // 如有 unset 陣列的話 會將陣列補上空缺
+//         $bed_use_info = array_values($bed_use_info);
 
-// 因為 gravity form 沒辦法用 PHP 輸出 disabled 屬性，所以用 Jquery 腳本使用
-function add_readonly_script($form)
-{
+//         $entry_count = count($bed_use_info);
+//         $foreach_count = 0;
+
+//         // start to check the register people
+//         foreach ($bed_use_info as $temp_bed_use_info) {
+
+//             if (!empty($repeat_remove))
+//                 if (in_array($foreach_count, $repeat_remove)) {
+//                     $foreach_count++;
+//                     continue;
+//                 }
+
+
+//             for ($i = 0; $i < $entry_count; $i++) {
+
+//                 if (!empty($repeat_remove))
+//                     if (in_array($i, $repeat_remove))
+//                         continue;
+
+
+//                 if (!array_diff($bed_use_info[$foreach_count], $bed_use_info[$i])) {
+//                     $full_bed[] = $bed_use_info[$foreach_count];
+//                     $repeat_remove[] = $i;
+
+
+//                     $group[] = $i;
+//                 }
+//             }
+
+//             $room_count[] = array(count($group), $group);
+
+//             // initial group array
+//             unset($group);
+
+//             $foreach_count++;
+//         }
+
+
+//         // check the register people wheather arrive to 2 people
+//         foreach ($room_count as $room_count_info) {
+//             if ($room_count_info[0] >= 2) {
+//                 $room_name_info[] = $room_count_info[1][0];
+//             }
+//         }
+
+
+//         // get final full bed name in an array
+//         foreach ($room_name_info as $temp_room_name_info) {
+//             $room_name_info_final[] = $bed_use_info[$temp_room_name_info][2];
+//         }
+//     } else {
+//         $room_name_info_final = array();
+//     }
+
+//     // echo "<pre>";
+//     // print_r($room_name_info_final);
+//     // echo "</pre>";
+
+
+//     // start to retrieve the option of form 
+//     foreach ($form['fields'] as $field) {
+
+//         if ($field->type != 'select' || strpos($field->cssClass, 'bed_number') === false) {
+//             continue;
+//         }
+
+//         $choices = array();
+//         foreach ($sevenDate as $sevenDateDisplay) {
+
+//             if (empty($room_name_info_final)) {
+//                 $choices[] = array('text' => $sevenDateDisplay, 'value' => $sevenDateDisplay);
+//             } else {
+//                 // if the bed room is full of people then value will add the 'full-' text in the front
+//                 foreach ($room_name_info_final as $temp_room_name_info_final) {
+
+//                     if ($temp_room_name_info_final == $sevenDateDisplay) {
+//                         $choices[] = array('text' => $sevenDateDisplay . '(人數已達最高預約人數)', 'value' => 'full-' . $sevenDateDisplay);
+//                     } else {
+//                         $choices[] = array('text' => $sevenDateDisplay, 'value' => $sevenDateDisplay);
+//                     }
+//                 }
+//             }
+
+
+
+//             //
+//         }
+
+//         // update 'Select a Post' to whatever you'd like the instructive option to be
+//         $field->placeholder = '選擇病床';
+//         $field->choices = $choices;
+//     }
+//     return $form;
+// }
+// add_filter('gform_pre_render_6', 'at_bed_number');
+
+// // 因為 gravity form 沒辦法用 PHP 輸出 disabled 屬性，所以用 Jquery 腳本使用
+// function add_readonly_script($form)
+// {
+// 
 ?>
 
-    <script type="text/javascript">
-        jQuery(document).ready(function() {
+<script type="text/javascript">
+    //         jQuery(document).ready(function() {
 
-            jQuery('option').each(function() {
+    //             jQuery('option').each(function() {
 
-                // option value 裡有 full 值的就添加 disabled 屬性
-                if (!jQuery(this).val().indexOf('full')) {
-                    jQuery(this).attr("disabled", true);
-                }
+    //                 // option value 裡有 full 值的就添加 disabled 屬性
+    //                 if (!jQuery(this).val().indexOf('full')) {
+    //                     jQuery(this).attr("disabled", true);
+    //                 }
 
-            });
+    //             });
 
 
-        });
-    </script>
+    //         });
+    //     
+</script>
 
 <?php
-    return $form;
+//     return $form;
+// }
+// add_filter('gform_pre_render_6', 'add_readonly_script');
+
+
+
+
+function my_test_action()
+{
+    $postData = $_POST['data'];
+    wp_send_json($postData); // or return json_encode(), 若直接 return 會回傳0
+    wp_die(); // or die()
+
 }
-add_filter('gform_pre_render_6', 'add_readonly_script');
+
+add_action('wp_ajax_my_test_action', 'my_test_action');
+add_action('wp_ajax_nopriv_my_test_action', 'my_test_action');

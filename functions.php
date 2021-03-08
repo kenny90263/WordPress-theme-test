@@ -35,13 +35,107 @@ function progress_call_back($entry)
         <option value="5" <?= $status == 5 ? "selected" : ""; ?>>無效申請單。</option>
     </select>
     <input type="submit">
-<?php
+    <?php
 }
 
 
 
 
 
+function at_create_menu()
+{
+    add_submenu_page(
+        'edit.php?post_type=course',
+        '',
+        '報名課程人員名單',
+        'administrator',
+        'reg_members',
+        'reg_members_callback',
+        ''
+    );
+
+    function reg_members_callback()
+    {
+        $courseID = $_GET['id'];
+        global $wpdb;
+        $result = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}kenny_course WHERE page_id = {$courseID}");
+        // 現在報名人數
+        $regPeople = count($result);
+
+
+    ?>
+
+        <h2><?= get_the_title($courseID); ?></h2>
+
+        <div class="course-info">
+            <p>現在報名人數：<?= $regPeople; ?></p>
+        </div>
+
+        <table class="at-entry-table-list">
+
+            <thead>
+                <tr>
+                    <th style="width: 5%;">刪除</th>
+                    <th style="width: 15%;">報名日期</th>
+                    <th style="width: 15%;">姓名</th>
+                    <th style="width: 15%;">生日</th>
+                    <th>聯絡電話</th>
+                    <th style="width: 30%;">地址</th>
+                    <th>公司行號</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <?php
+
+                foreach ($result as $regdata) {
+                    echo "<tr>";
+                    echo '<td><input type="checkbox" name="id[]" value="' . $regdata->id . '"></td>';
+                    echo "<td>" . substr($regdata->create_date, 0, 10) . "</td>";
+                    echo "<td>" . $regdata->name . "</td>";
+                    echo "<td>" . substr($regdata->birthday, 0, 10) . "</td>";
+                    echo "<td>" . $regdata->telphone . "</td>";
+                    echo "<td>" . $regdata->address . "</td>";
+                    echo "<td>" . $regdata->companyname . "</td>";
+                    echo "</tr>";
+                }
+
+                ?>
+
+            </tbody>
+        </table>
+
+
+
+        <style>
+            .course-info p {
+                font-size: 1.2em;
+                line-height: 70%;
+            }
+
+            .at-entry-table-list {
+                margin: 32px auto;
+                max-width: 90%;
+                border-collapse: collapse;
+            }
+
+            .at-entry-table-list th {
+                background: #D3DCE3;
+            }
+
+            .at-entry-table-list td,
+            .at-entry-table-list th {
+                border: 1px solid #000000;
+                text-align: center;
+                padding: 15px;
+                font-size: 1.2em;
+                color: #000000;
+            }
+
+            .at-entry-table-list tr:nth-child(even) {
+                background: #D3DCE3;
+            }
+        </style>
 
 
 
@@ -49,10 +143,9 @@ function progress_call_back($entry)
 
 
 
-
-
-
-
+    <?php }
+}
+add_action('admin_menu', 'at_create_menu');
 
 
 
@@ -115,6 +208,13 @@ function kenny_course_entry_meta_boxes()
     );
 
     add_meta_box(
+        'kenny_course_write_entry_box',
+        '匯入報名人員',
+        'kenny_course_write_entry_box_cb',
+        'course'
+    );
+
+    add_meta_box(
         'kenny_course_max_people_box',
         '最多報名人數',
         'kenny_course_max_people_box_cb',
@@ -132,6 +232,42 @@ function kenny_course_entry_meta_boxes()
 }
 add_action('add_meta_boxes', 'kenny_course_entry_meta_boxes');
 
+// 匯入報名人員
+function kenny_course_write_entry_box_cb($post)
+{
+
+    // echo "<pre>";
+    // print_r($post);
+    // echo "</pre>";
+    ?>
+
+    <h3>單筆匯入</h3>
+    <label for="reg_date" style="display: block;">報名日期
+        <input type="date" name="reg_date">
+    </label>
+    <label for="reg_name" style="display: block;">姓名
+        <input type="text" name="reg_name">
+    </label>
+    <label for="reg_bdate style="display: block;"">生日
+        <input type="date" name="reg_bdate">
+    </label>
+    <label for="reg_phone" style="display: block;">聯絡電話
+        <input type="text" name="reg_phone">
+    </label>
+    <label for="reg_address" style="display: block;">地址
+        <input type="text" name="reg_address">
+    </label>
+    <label for="reg_company" style="display: block;">公司行號
+        <input type="text" name="reg_company">
+    </label>
+
+
+
+
+
+
+<?php }
+
 // 顯示報名人
 function kenny_course_entry_box_cb($post)
 {
@@ -140,7 +276,6 @@ function kenny_course_entry_box_cb($post)
     global $wpdb;
 
     $result = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}kenny_course WHERE page_id = {$courseID}");
-
 
     // 現在報名人數
     $regPeople = count($result);
@@ -154,6 +289,7 @@ function kenny_course_entry_box_cb($post)
     <div class="course-info">
         <p>現在報名人數：<?= $regPeople; ?></p>
         <p class="reg-now">最多報名人數：<?= get_post_meta($post->ID, 'course_max_people', true); ?></p>
+        <a href="<?= admin_url(); ?>edit.php?post_type=course&page=reg_members&id=<?= $courseID; ?>">查看全部報名人數</a>
     </div>
     <table class="at-entry-table-list">
 
@@ -275,6 +411,27 @@ function kenny_course_save_meta_box($post_id)
     foreach ($delete_id as $ids) {
         $wpdb->delete($wpdb->prefix . 'kenny_course', array('id' => $ids));
     }
+
+
+    $reg_date = $_POST['reg_date'];
+    $name = $_POST['reg_name'];
+    $bday = $_POST['reg_bdate'];
+    $phone = $_POST['reg_phone'];
+    $address = $_POST['reg_address'];
+    $company_name = $_POST['reg_company'];
+
+    $wpdb->insert(
+        $wpdb->prefix . 'kenny_course',
+        array(
+            'page_id'           => $post_id,
+            'create_date'       => $reg_date,
+            'name'              => $name,
+            'birthday'          => $bday,
+            'telphone'          => $phone,
+            'address'           => $address,
+            'companyname'       => $company_name
+        )
+    );
 }
 add_action('save_post', 'kenny_course_save_meta_box');
 

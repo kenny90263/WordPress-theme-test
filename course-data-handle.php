@@ -51,15 +51,15 @@ if (!isset($_POST['kenny_course']) || !wp_verify_nonce($_POST['kenny_course'], '
 // $charset_collate = $wpdb->get_charset_collate();
 
 // $sql = "CREATE TABLE $table_name (
-// 		id mediumint(9) NOT NULL AUTO_INCREMENT,
-//         page_id mediumint(9) NOT NULL,
-// 		create_date datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-// 		name tinytext NOT NULL,
-//         birthday datetime DEFAULT '0000-00-00' NOT NULL,
-//         telphone tinytext NOT NULL,
-//         address text NOT NULL,
-//         companyname text,
-// 		PRIMARY KEY  (id)
+		// id mediumint(9) NOT NULL AUTO_INCREMENT,
+        // page_id mediumint(9) NOT NULL,
+		// create_date datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+		// name tinytext NOT NULL,
+        // birthday datetime DEFAULT '0000-00-00' NOT NULL,
+        // telphone tinytext NOT NULL,
+        // address text NOT NULL,
+        // companyname text,
+		// PRIMARY KEY  (id)
 // 	) $charset_collate;";
 
 // require_once(ABSPATH . 'wp-admin/includes/upgrade.php');

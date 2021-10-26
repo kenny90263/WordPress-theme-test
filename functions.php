@@ -1,5 +1,44 @@
 <?php
 
+// $date_mod = date('Y-m-d');
+//$string = "url>
+// <loc>test123</loc>
+// <lastmod>2021-5-5</lastmod>
+// <changefreq>monthly</changefreq>
+// <priority>0.5</priority>
+// </url
+// ";
+
+
+//$xml = simplexml_load_file("../sitemap.xml");
+
+// echo "<pre>";
+// print_r($xml);
+// echo "</pre>";
+
+//$xml->addChild($string);
+
+// Create the SimpleXML object from the string
+// $xml = simplexml_load_file("../sitemap.xml");
+// // add an <url> child to the <urlset> node
+// $url = $xml->addChild("url");
+// // add the <loc> and <priority> children to the <url> node 
+// $url->addChild("loc", "http://domain.fake/link2.html");
+// $url->addChild("lastmod", "2021-6-5");
+// $url->addChild("priority", 0.98);
+
+// // get the updated XML string
+// $newXMLStr = $xml->asXML();
+// //write it to the sitemap.xml file
+// file_put_contents("../sitemap.xml", $newXMLStr);
+
+function add_link_to_sitemapxml()
+{
+
+    wp_dequeue_script('jetpack-block-slideshow-js');
+    wp_deregister_script('jetpack-block-slideshow-js');
+}
+add_action('wp_enqueue_scripts', 'add_link_to_sitemapxml');
 
 // 新增表單狀態處理
 function add_handle_details_meta_box($meta_boxes, $entry, $form)
@@ -17,15 +56,23 @@ add_filter('gform_entry_detail_meta_boxes', 'add_handle_details_meta_box', 10, 3
 
 function progress_call_back($entry)
 {
+    // add 2021/07/07
+    date_default_timezone_set("Asia/Taipei");
     global $wpdb;
     // entry id
     $entry_id = $entry['entry']['id'];
     // send entry status to database
     if (!empty($_POST['at-status']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
         $wpdb->update($wpdb->prefix . 'gf_entry', array('payment_status' => $_POST['at-status']), array('id' => $entry_id));
+
+        // updated date  // add 2021/07/07
+        $wpdb->update($wpdb->prefix . 'gf_entry', array('payment_date' => date("Y-m-d H:i:s")), array('id' => $entry_id));
     }
     $result = $wpdb->get_results("SELECT payment_status FROM {$wpdb->prefix}gf_entry WHERE id = {$entry_id}");
     $status = $result[0]->payment_status;
+
+    // add 2021/07/07
+    $dated = $wpdb->get_results("SELECT payment_date FROM {$wpdb->prefix}gf_entry WHERE id = {$entry_id}")[0]->payment_date;
 ?>
     <select name="at-status">
         <option value="1" <?= $status == 1 ? "selected" : ""; ?>>申請資料處中...</option>
@@ -36,7 +83,11 @@ function progress_call_back($entry)
     </select>
     <input type="submit">
     <?php
+    if (!empty($dated)) {
+        echo '更新日期：' . $dated;
+    }
 }
+
 
 
 
@@ -248,7 +299,7 @@ function kenny_course_write_entry_box_cb($post)
     <label for="reg_name" style="display: block;">姓名
         <input type="text" name="reg_name">
     </label>
-    <label for="reg_bdate style="display: block;"">生日
+    <label for="reg_bdate style=" display: block;"">生日
         <input type="date" name="reg_bdate">
     </label>
     <label for="reg_phone" style="display: block;">聯絡電話
@@ -392,10 +443,6 @@ function kenny_course_save_meta_box($post_id)
         return;
     }
 
-
-
-
-
     $max_people = sanitize_text_field($_POST['course_max_people']);
     if (!preg_match("/^[1-9][0-9]*$/", $max_people)) {
         if (!$max_people == "") {
@@ -516,8 +563,6 @@ function populate_posts($form)
             date("Y-m-d", strtotime("4 day")),
             date("Y-m-d", strtotime("5 day")),
             date("Y-m-d", strtotime("6 day"))
-            //date("Y-m-d",strtotime("7 day")),
-            //date("Y-m-d",strtotime("8 day")),
         );
 
         $choices = array();
@@ -531,7 +576,7 @@ function populate_posts($form)
     }
     return $form;
 }
-add_filter('gform_pre_render_5', 'populate_posts');
+add_filter('gform_pre_render_9', 'populate_posts');
 add_filter('gform_pre_render_6', 'populate_posts');
 
 
@@ -774,9 +819,6 @@ add_filter('gform_pre_render_6', 'populate_posts');
 // }
 // add_filter('gform_pre_render_6', 'add_readonly_script');
 
-
-
-
 function my_test_action()
 {
     $postData = $_POST['data'];
@@ -787,3 +829,186 @@ function my_test_action()
 
 add_action('wp_ajax_my_test_action', 'my_test_action');
 add_action('wp_ajax_nopriv_my_test_action', 'my_test_action');
+
+
+
+
+
+// Prevent the default content being output.
+add_action('gform_print_entry_content', function () {
+    remove_action('gform_print_entry_content', 'gform_default_entry_content', 10);
+}, 1);
+
+add_action('gform_print_entry_content', 'my_print_entry_content', 10, 3);
+function my_print_entry_content($form, $entry, $entry_ids)
+{
+    // 表單名字
+    $formTitle = $form['title'];
+    // 申請日期
+    $entryDate = $entry['date_created'];
+    $entryYear = substr($entryDate, 0, 4) - 1911;
+    $entryMonth = substr($entryDate, 5, 2);
+    $entryDay = substr($entryDate, 8, 2);
+    $entryDate = $entryYear . "年" . $entryMonth . "月" . $entryDay . "日";
+
+    // echo "<pre>";
+    // print_r($entry);
+    // echo "</pre>";
+    // echo "<pre>";
+    // print_r($form['fields']);
+    // echo "</pre>";
+?>
+    <div class="afgh-print">
+        <h1 class="text-center"><?= $formTitle ?></h1>
+        <span class="reg-date">申請日期：<?= $entryDate ?></span>
+        <table class="mb-4">
+            <tr>
+                <td style="width: 20%;">申請人</td>
+                <td><?= $entry[1] ?></td>
+                <td>簽章</td>
+                <td style="width: 15%;"></td>
+                <td rowspan="2">身分證明<br><br>文件號碼</td>
+                <td>
+                    <label><input type="checkbox" <?= checked("身分證", $entry[2]) ?>>身分證</label>
+                    <label><input type="checkbox" <?= checked("居留證", $entry[2]) ?>>居留證</label>
+                    <label><input type="checkbox" <?= checked("護照", $entry[2]) ?>>護照</label>
+                </td>
+            </tr>
+            <tr>
+                <td>出生日期</td>
+                <td colspan="3"><?= $entry[6] ?></td>
+                <td><?= $entry[10] ?><?= $entry[4] ?><?= $entry[5] ?></td>
+            </tr>
+            <tr>
+                <td>法定代理人</td>
+                <td><?= $entry[8] ?></td>
+                <td>簽章</td>
+                <td style="width: 15%;"></td>
+                <td rowspan="2">身分證明<br><br>文件號碼</td>
+                <td>
+                    <label><input type="checkbox" <?= checked("身分證", $entry[13]) ?>>身分證</label>
+                    <label><input type="checkbox" <?= checked("居留證", $entry[13]) ?>>居留證</label>
+                    <label><input type="checkbox" <?= checked("護照", $entry[13]) ?>>護照</label>
+                </td>
+            </tr>
+            <tr>
+                <td>與申請人關係</td>
+                <td colspan="3"><?= $entry[9] ?></td>
+                <td><?= $entry[3] ?><?= $entry[11] ?><?= $entry[12] ?></td>
+            </tr>
+            <tr>
+                <td>申請原因</td>
+                <td colspan="5" class="reg-reason">
+                    <label><input type="checkbox" <?= !empty($entry["14.1"]) ? "checked" : "" ?>>居家隔離/檢疫者，因親屬(或國外親屬)身故或重病等社會緊急需求，需外出奔喪或探視</label>
+                    <label><input type="checkbox" <?= !empty($entry["14.2"]) ? "checked" : "" ?>>旅外親屬事故或重病等緊急特殊因素入境他國家/地區</label>
+                    <label><input type="checkbox" <?= !empty($entry["14.3"]) ? "checked" : "" ?>>工作</label>
+                    <label><input type="checkbox" <?= !empty($entry["14.4"]) ? "checked" : "" ?>>短期商務人士</label>
+                    <label><input type="checkbox" <?= !empty($entry["14.5"]) ? "checked" : "" ?>>出國求學</label>
+                    <label><input type="checkbox" <?= !empty($entry["14.6"]) ? "checked" : "" ?>>外國或中國大陸、香港、澳門人士出境</label>
+                    <label><input type="checkbox" <?= !empty($entry["14.7"]) ? "checked" : "" ?>>相關出境適用對象之眷屬</label>
+                    <label><input type="checkbox" <?= !empty($entry["14.8"]) ? "checked" : "" ?>>經嚴重特殊傳染性肺炎中央流行疫情指揮中心同意</label>
+                    <label><input type="checkbox" <?= !empty($entry[21]) ? "checked" : "" ?>>其他因素：<?= $entry[21] ?></label>
+                </td>
+            </tr>
+            <tr>
+                <td rowspan="2">出境資料<br>【非出境免填】</td>
+                <td colspan="3">出境日期</td>
+                <td colspan="2"><?= $entry[19] ?></td>
+            </tr>
+            <tr>
+                <td colspan="3">搭乘航空班機編號</td>
+                <td colspan="2"><?= $entry[15] ?></td>
+            </tr>
+            <tr>
+                <td>取得檢驗結果時間等需求</td>
+                <td colspan="5"><?= $entry[20] ?></td>
+            </tr>
+            <tr>
+                <td>個人自費檢驗資料蒐集處理及利用同意書</td>
+                <td colspan="5" class="privacy-box">
+                    就申請人於民國_______年_______月_______日於_____________________醫院接受COVID-19自費檢驗資料之個人資料（包括姓名、身分證字號、生日、檢驗結果等資料）：<br><br>
+                    1.同意於簽署本申請表之日期起算□永久或_____年內，提供予衛生福利部中央健康保險署做為載入申請人之健康存摺及□健保醫療資訊雲端查詢系統，並得於本人醫療需要範圍內予以蒐集、處理或利用。<br>
+                    ____________(簽章) ______________(法定代理人簽章)<br><br>
+                    2. 同意於簽署本申請表之日期起算□永久或_____年內，提供衛生福利部疾病管制署作為相關疫情監測。<br>
+                    ____________(簽章) ______________(法定代理人簽章)<br><br>
+                    申請人已瞭解：不同意提供個人自費檢驗資料對申請自費檢驗並無影響。如同意提供，就提供之個人資料得依個人資料保護法第3條規定，保留隨時取消本同意書之權利，並得行使：申請查詢或請求閱覽、製給複製本、補充、更正、停止蒐集、處理或利用及請求刪除等權利。<br>
+                    中華民國_______年_______月_______日
+                </td>
+            </tr>
+        </table>
+
+        <style>
+            .privacy-box {
+                text-align: left;
+            }
+
+            .reg-reason label {
+                display: block;
+                text-align: left;
+            }
+
+            .reg-date {
+                float: right;
+                font-size: 1.3em;
+                font-weight: bold;
+            }
+
+            body {
+                font-family: "Microsoft JhengHei";
+            }
+
+            .text-center {
+                text-align: center;
+            }
+
+            .mb-4 {
+                margin-bottom: 1em !important;
+            }
+
+            .afgh-print {
+                width: 100%;
+                margin: auto;
+            }
+
+            /* 防止列印時出現一頁空白 */
+            @media print {
+
+                html,
+                body {
+                    height: 99%;
+                }
+            }
+
+            .afgh-print h1 {
+                margin-bottom: 0px;
+                font-weight: bold;
+                font-size: 2em;
+            }
+
+            .afgh-print h2 {
+                margin-bottom: 20px;
+                font-weight: bold;
+                font-size: 1.5em;
+            }
+
+            .afgh-print table {
+                width: 100%;
+                text-align: center;
+                font-size: 1.4em;
+                border-collapse: collapse;
+            }
+
+            .afgh-print table td {
+                border: 2px solid #000000;
+                padding: 10px 5px;
+                font-weight: bold;
+            }
+        </style>
+
+
+
+
+
+
+
+    <?php }

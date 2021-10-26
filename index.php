@@ -1,14 +1,29 @@
 <?php get_header(); ?>
 
 
+<?php
 
 
+do_action("test");
+
+
+add_action("test", "add", 999);
+
+function add()
+{
+    echo "test";
+}
+
+
+
+
+?>
 
 <script type="text/javascript">
     var ajaxurl = "<?php echo admin_url('admin-ajax.php'); ?>";
 
     $.ajax({
-        url: ajaxurl, 
+        url: ajaxurl,
         type: "POST",
         data: {
             action: "my_test_action",
